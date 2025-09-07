@@ -55,6 +55,8 @@ export default {
 		`).trim().replaceAll('\t', '');
 
 		html = html.replace(/<!-- embed start -->.*?<!-- embed end -->/s, newEmbedHTML);
+		if (!html.includes(newEmbedHTML))
+			console.log(JSON.stringify({ html, newEmbedHTML }))
 
 		const headers = new Headers(originalResponse.headers);
 		headers.set('Content-Type', originalResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
