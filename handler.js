@@ -21,8 +21,6 @@ export default {
 			return originalResponse;
 		}
 
-		let html = await originalResponse.text()
-
 		const embedInformation = await fetch(env.API_ORIGIN + `embed?url=${workerURL.pathname}`, {
 			method: 'GET',
 		}).then(response => response.json())
@@ -31,6 +29,8 @@ export default {
 		if (!embedInformation?.data) {
 			return originalResponse
 		}
+
+		let html = await originalResponse.text()
 
 		const newEmbedHTML =
 			`<meta name="description" content="Tell your story!" />
