@@ -36,27 +36,16 @@ export default {
 		if (!contentType || !contentType.includes('text/html'))
 			return originalResponse;
 
-		const embedInformation = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`, {
+		const newEmbedHTML = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`, {
 			method: 'GET',
-		}).then(response => response.json())
+		}).then(response => response.text())
 			.catch(() => undefined)
 
-		if (!embedInformation?.data)
+		if (!newEmbedHTML)
 			return originalResponse
 
 		let html = await originalResponse.text()
-
-		const newEmbedHTML = (`
-			<meta name="description" content="Tell your story!" />
-			<meta property="og:type" content="website" />
-			<meta property="og:title" content="${embedInformation.data.title}" />
-			<meta property="og:description" content="${embedInformation.data.description}" />
-			<meta property="og:url" content="${env.STATIC_ORIGIN}${embedInformation.data.url}" />
-		`).trim().replaceAll('\t', '');
-
 		html = html.replace(/<!-- embed start -->.*?<!-- embed end -->/s, newEmbedHTML);
-		if (!html.includes(newEmbedHTML))
-			console.log(JSON.stringify({ html, newEmbedHTML }))
 
 		const headers = new Headers(originalResponse.headers);
 		headers.set('Content-Type', originalResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
