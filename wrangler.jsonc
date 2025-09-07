@@ -1,5 +1,5 @@
 {
-	"name": "embed-fluff4-me",
+	"name": "embed-fluff4me",
 	"compatibility_date": "2025-09-07",
 	"main": "handler.js",
 	"env": {
