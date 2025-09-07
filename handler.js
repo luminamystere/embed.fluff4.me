@@ -61,8 +61,8 @@ export default {
 		headers.set('Content-Length', html.length.toString());
 
 		return new Response(html, {
-			status: originalResponse.status,
-			statusText: originalResponse.statusText,
+			status: originalResponse.status === 304 ? 200 : originalResponse.status,
+			statusText: originalResponse.status === 304 ? 'OK' : originalResponse.statusText,
 			headers,
 		});
 	},
