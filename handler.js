@@ -33,6 +33,7 @@ export default {
 		});
 
 		const contentType = originalResponse.headers.get('Content-Type');
+		console.log(JSON.stringify({ contentType, embedPath: env.API_ORIGIN + `embed?url=${encodeURIComponent(requestURL.pathname)}` }))
 		if (!contentType || !contentType.includes('text/html'))
 			return originalResponse;
 
