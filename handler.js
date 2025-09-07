@@ -36,13 +36,40 @@ export default {
 		if (!contentType || !contentType.includes('text/html'))
 			return originalResponse;
 
-		const newEmbedHTML = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`, {
-			method: 'GET',
-		}).then(response => response.text())
-			.catch(() => undefined)
+		/**
+		 * @typedef {Object} EmbedProperty
+		 * @property {'name' | 'property'} type
+		 * @property {string} name
+		 * @property {string} content
+		 */
 
-		if (!newEmbedHTML)
+		const newEmbedProperties = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`)
+			.then(response => response.json())
+			.catch(() => undefined)
+			.then(json => /** @type {EmbedProperty[] | undefined} */ (json?.data))
+
+		if (!Array.isArray(newEmbedProperties) || !newEmbedProperties.length)
 			return originalResponse
+
+		/** 
+		 * @param {string} str 
+		 * @returns {string}
+		 */
+		function escapeHTMLAttributeValue (str) {
+			return str
+				.replaceAll('&', '&amp;')
+				.replaceAll('"', '&quot;')
+				.replaceAll("'", '&#x27;')
+				.replaceAll('<', '&lt;')
+				.replaceAll('>', '&gt;')
+		}
+
+		const newEmbedHTML = newEmbedProperties.map(prop => {
+			if (prop.type !== 'name' && prop.type !== 'property')
+				return ''
+
+			return `<meta ${prop.type}="${escapeHTMLAttributeValue(prop.name)}" content="${escapeHTMLAttributeValue(prop.content)}" />`
+		}).join('\n\t\t')
 
 		let html = await originalResponse.text()
 		html = html.replace(/<!-- embed start -->.*?<!-- embed end -->/s, newEmbedHTML);
