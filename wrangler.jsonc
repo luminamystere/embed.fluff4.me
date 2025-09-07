@@ -2,9 +2,19 @@
 	"name": "embed-fluff4me",
 	"compatibility_date": "2025-09-07",
 	"main": "handler.js",
+	"vars": {
+		"STATIC_ORIGIN": "https://fluff4.me",
+		"TEST_ORIGIN": "https://embed.fluff4.me",
+		"API_ORIGIN": "https://api.fluff4.me"
+	},
 	"env": {
 		"dev": {
-			"route": "https://localhost:8095/"
+			"route": "https://localhost:8095/",
+			"vars": {
+				"STATIC_ORIGIN": "https://localhost:8095",
+				"TEST_ORIGIN": "https://localhost:8095",
+				"API_ORIGIN": "https://localhost:8090"
+			}
 		}
 	},
 	"dev": {
