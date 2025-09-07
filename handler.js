@@ -36,7 +36,7 @@ export default {
 		if (!contentType || !contentType.includes('text/html'))
 			return originalResponse;
 
-		const embedInformation = await fetch(env.API_ORIGIN + `embed?url=${requestURL.pathname}`, {
+		const embedInformation = await fetch(env.API_ORIGIN + `embed?url=${encodeURIComponent(requestURL.pathname)}`, {
 			method: 'GET',
 		}).then(response => response.json())
 			.catch(() => undefined)
