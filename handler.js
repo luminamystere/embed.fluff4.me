@@ -2,6 +2,7 @@ export default {
 	async fetch (request, env, ctx) {
 		const workerURL = new URL(request.url);
 
+		console.log(workerURL.pathname, workerURL.search, env.TEST_ORIGIN);
 		const targetURL = new URL(workerURL.pathname + workerURL.search, env.TEST_ORIGIN);
 
 		const originalResponse = await fetch(targetURL.toString(), {

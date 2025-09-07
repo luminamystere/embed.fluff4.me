@@ -9,5 +9,9 @@
 	},
 	"dev": {
 		"local_protocol": "https"
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
 	}
 }
