@@ -33,11 +33,10 @@ export default {
 		});
 
 		const contentType = originalResponse.headers.get('Content-Type');
-		console.log(JSON.stringify({ contentType, embedPath: env.API_ORIGIN + `embed?url=${encodeURIComponent(requestURL.pathname)}` }))
 		if (!contentType || !contentType.includes('text/html'))
 			return originalResponse;
 
-		const embedInformation = await fetch(env.API_ORIGIN + `embed?url=${encodeURIComponent(requestURL.pathname)}`, {
+		const embedInformation = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`, {
 			method: 'GET',
 		}).then(response => response.json())
 			.catch(() => undefined)
