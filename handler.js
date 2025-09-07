@@ -78,6 +78,9 @@ export default {
 		headers.set('Content-Type', originalResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
 		headers.set('Content-Length', html.length.toString());
 
+		// uncomment this when we stop changing embeds left and right
+		// headers.set('Cache-Control', 'public, s-maxage=3600');
+
 		return new Response(html, {
 			status: originalResponse.status === 304 ? 200 : originalResponse.status,
 			statusText: originalResponse.status === 304 ? 'OK' : originalResponse.statusText,
