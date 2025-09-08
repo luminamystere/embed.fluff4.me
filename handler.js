@@ -62,6 +62,8 @@ export default {
 				.replaceAll("'", '&#x27;')
 				.replaceAll('<', '&lt;')
 				.replaceAll('>', '&gt;')
+				.replaceAll('\xa0', '&nbsp;')
+				.replaceAll('\n', '&NewLine;')
 		}
 
 		const newEmbedHTML = newEmbedProperties.map(prop => {
