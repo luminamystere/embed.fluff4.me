@@ -78,8 +78,8 @@ export default {
 		headers.set('Content-Type', originalResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
 		headers.set('Content-Length', html.length.toString());
 
-		// uncomment this when we stop changing embeds left and right
-		// headers.set('Cache-Control', 'public, s-maxage=3600');
+		headers.set('Cache-Control', 'public, s-maxage=300'); // 5 minute cache
+		headers.set('Cache-Tag', 'embed-injected');
 
 		return new Response(html, {
 			status: originalResponse.status === 304 ? 200 : originalResponse.status,
