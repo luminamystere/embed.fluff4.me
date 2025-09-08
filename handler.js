@@ -78,7 +78,7 @@ export default {
 
 		if (canonicalURL) {
 			const oembedEndpoint = escapeHTMLAttributeValue(`https://api.fluff4.me/oembed?url=${encodeURIComponent(canonicalURL)}`)
-			newEmbedHTML += `\n\t\t<link rel="alternate" type="application/json+oembed" href="${oembedEndpoint}"${title ? `title="${title}"` : ''} />`
+			newEmbedHTML += `\n\t\t<link rel="alternate" type="application/json+oembed" href="${oembedEndpoint}"${title ? ` title="${title}"` : ''} />`
 		}
 
 		let html = await originalResponse.text()
