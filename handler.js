@@ -66,12 +66,20 @@ export default {
 				.replaceAll('\n', '&NewLine;')
 		}
 
-		const newEmbedHTML = newEmbedProperties.map(prop => {
+		let newEmbedHTML = newEmbedProperties.map(prop => {
 			if (prop.type !== 'name' && prop.type !== 'property')
 				return ''
 
 			return `<meta ${prop.type}="${escapeHTMLAttributeValue(prop.name)}" content="${escapeHTMLAttributeValue(prop.content)}" />`
 		}).join('\n\t\t')
+
+		const canonicalURL = newEmbedProperties.find(p => (p.type === 'property' && p.name === 'og:url'))?.content
+		const title = newEmbedProperties.find(p => (p.type === 'property' && p.name === 'og:title'))?.content
+
+		if (canonicalURL) {
+			const oembedEndpoint = escapeHTMLAttributeValue(`https://api.fluff4.me/oembed?url=${encodeURIComponent(canonicalURL)}`)
+			newEmbedHTML += `\n\t\t<link rel="alternate" type="application/json+oembed" href="${oembedEndpoint}"${title ? `title="${title}"` : ''} />`
+		}
 
 		let html = await originalResponse.text()
 		html = html.replace(/<!-- embed start -->.*?<!-- embed end -->/s, newEmbedHTML);
