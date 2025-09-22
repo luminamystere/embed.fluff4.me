@@ -10,16 +10,19 @@ export default {
 			'/beta/',
 			'/js/',
 		]
+		const skippedPathnameEnds = [
+			'.css',
+			'.js',
+		]
 		const skippedFiles = [
 			'/env.json',
 			'/CNAME',
-			'/index.css',
-			'/index.js',
 			'/manifest.webmanifest',
 			'/oembed.json',
 		]
 		const shouldRewrite = (true
 			&& !skippedPathnameStarts.some(start => requestURL.pathname.startsWith(start))
+			&& !skippedPathnameEnds.some(end => requestURL.pathname.endsWith(end))
 			&& !skippedFiles.includes(requestURL.pathname)
 		)
 
