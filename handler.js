@@ -21,6 +21,9 @@ export default {
 		const skippedPathnameEnds = [
 			'.css',
 			'.js',
+			'.png',
+			'.txt',
+			'.ico',
 		]
 		const skippedFiles = [
 			'/env.json',
