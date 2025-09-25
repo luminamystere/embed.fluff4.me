@@ -37,6 +37,7 @@ export default {
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
 
+		console.log({ message: `authorization length: ${`${env.AXIOM_LOG_TOKEN}`.length}` })
 		ctx.waitUntil(fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
 			headers: {
 				authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
