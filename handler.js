@@ -49,8 +49,11 @@ export default {
 				type: requestURL.pathname,
 				details: request.headers.get("Referer") || "direct",
 			}]),
+		}).then(res => {
+			if (res.status !== 200)
+				throw new Error(`Axiom log failed with status ${res.status}: ${res.statusText}`);
 		}).catch(err => {
-			console.error(err)
+			console.log({ message: err.message })
 		}));
 
 		const cache = caches.default;
