@@ -1,0 +1,7 @@
+{
+  "name": "embed.fluff4.me",
+  "private": true,
+  "devDependencies": {
+    "typescript": "5.9.2"
+  }
+}

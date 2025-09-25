@@ -1,5 +1,13 @@
 export default {
+	/**
+	 * @param {Request} request
+	 * @param {Record<string, any>} env
+	 * @param {ExecutionContext} ctx
+	 */
 	async fetch (request, env, ctx) {
+		if (request.method !== 'GET')
+			return fetch(request);
+
 		const requestURL = new URL(request.url);
 
 		const skippedPathnameStarts = [
@@ -28,16 +36,29 @@ export default {
 
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
-		const originalResponse = await fetch(targetURL.toString(), {
+
+		const requestHeaders = new Headers(request.headers);
+		if (shouldRewrite) {
+			requestHeaders.delete('If-None-Match');
+			requestHeaders.delete('If-Modified-Since');
+		}
+
+		const rawResponse = await fetch(targetURL.toString(), {
 			method: request.method,
-			headers: request.headers,
+			headers: requestHeaders,
 			body: request.body,
 			redirect: 'follow',
 		});
 
-		const contentType = originalResponse.headers.get('Content-Type');
+		const contentType = rawResponse.headers.get('Content-Type');
 		if (!contentType || !contentType.includes('text/html'))
-			return originalResponse;
+			return rawResponse;
+
+		const cache = caches.default;
+
+		const cachedInjected = await cache.match(request.url).catch(() => null);
+		if (cachedInjected)
+			return cachedInjected;
 
 		/**
 		 * @typedef {Object} EmbedProperty
@@ -52,7 +73,7 @@ export default {
 			.then(json => /** @type {EmbedProperty[] | undefined} */ (json?.data))
 
 		if (!Array.isArray(newEmbedProperties) || !newEmbedProperties.length)
-			return originalResponse
+			return rawResponse
 
 		/** 
 		 * @param {string} str 
@@ -84,20 +105,23 @@ export default {
 			newEmbedHTML += `\n\t\t<link rel="alternate" type="application/json+oembed" href="${oembedEndpoint}"${title ? ` title="${title}"` : ''} />`
 		}
 
-		let html = await originalResponse.text()
+		let html = await rawResponse.text()
 		html = html.replace(/<!-- embed start -->.*?<!-- embed end -->/s, newEmbedHTML);
 
-		const headers = new Headers(originalResponse.headers);
-		headers.set('Content-Type', originalResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
-		headers.set('Content-Length', html.length.toString());
+		const responseHeaders = new Headers(rawResponse.headers);
+		responseHeaders.set('Content-Type', rawResponse.headers.get('Content-Type') ?? 'text/html; charset=utf-8');
+		responseHeaders.set('Content-Length', html.length.toString());
 
-		headers.set('Cache-Control', 'public, s-maxage=300'); // 5 minute cache
-		headers.set('Cache-Tag', 'embed-injected');
+		responseHeaders.set('Cache-Control', 'public, s-maxage=300'); // 5 minute cache
+		responseHeaders.set('Cache-Tag', 'embed-injected');
 
-		return new Response(html, {
-			status: originalResponse.status === 304 ? 200 : originalResponse.status,
-			statusText: originalResponse.status === 304 ? 'OK' : originalResponse.statusText,
-			headers,
+		const response = new Response(html, {
+			status: rawResponse.status === 304 ? 200 : rawResponse.status,
+			statusText: rawResponse.status === 304 ? 'OK' : rawResponse.statusText,
+			headers: responseHeaders,
 		});
+
+		ctx.waitUntil(cache.put(request.url, response.clone()).catch(() => { }));
+		return response;
 	},
 };
