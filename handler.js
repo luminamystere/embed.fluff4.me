@@ -37,7 +37,7 @@ export default {
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
 
-		fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
+		ctx.waitUntil(fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
 			headers: {
 				authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
 				"Content-Type": "application/json",
@@ -49,7 +49,7 @@ export default {
 				type: requestURL.pathname,
 				details: request.headers.get("Referer") || "direct",
 			}]),
-		})
+		}).catch(() => { }));
 
 		const cache = caches.default;
 		const cachedInjected = await cache.match(request.url).catch(() => null);
