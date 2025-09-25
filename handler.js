@@ -49,9 +49,9 @@ export default {
 				type: requestURL.pathname,
 				details: request.headers.get("Referer") || "direct",
 			}]),
-		}).then(res => {
+		}).then(async res => {
 			if (res.status !== 200)
-				throw new Error(`Axiom log failed with status ${res.status}: ${res.statusText}`);
+				throw new Error(`Axiom log failed with status ${res.status}: ${res.statusText} — ${await res.text().catch(() => '')}`);
 		}).catch(err => {
 			console.log({ message: err.message })
 		}));
