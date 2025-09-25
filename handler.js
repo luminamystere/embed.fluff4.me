@@ -37,24 +37,25 @@ export default {
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
 
-		ctx.waitUntil(fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
-			headers: {
-				authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
-				"Content-Type": "application/json",
-			},
-			method: "POST",
-			body: JSON.stringify([{
-				time: new Date().toISOString(),
-				method: "REFER",
-				type: requestURL.pathname,
-				details: request.headers.get("Referer") || "direct",
-			}]),
-		}).then(async res => {
-			if (res.status !== 200)
-				throw new Error(`Axiom log failed with status ${res.status}: ${res.statusText} — ${await res.text().catch(() => '')}`);
-		}).catch(err => {
-			console.log({ message: err.message })
-		}));
+		if (shouldRewrite)
+			ctx.waitUntil(fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
+				headers: {
+					authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
+					"Content-Type": "application/json",
+				},
+				method: "POST",
+				body: JSON.stringify([{
+					time: new Date().toISOString(),
+					method: "REFER",
+					type: requestURL.pathname,
+					details: request.headers.get("Referer") || "direct",
+				}]),
+			}).then(async res => {
+				if (res.status !== 200)
+					throw new Error(`Axiom log failed with status ${res.status}: ${res.statusText} — ${await res.text().catch(() => '')}`);
+			}).catch(err => {
+				console.log({ message: err.message })
+			}));
 
 		const cache = caches.default;
 		const cachedInjected = await cache.match(request.url).catch(() => null);
