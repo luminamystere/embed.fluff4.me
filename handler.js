@@ -37,6 +37,25 @@ export default {
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
 
+		fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
+			headers: {
+				authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
+				"Content-Type": "application/json",
+			},
+			method: "POST",
+			body: JSON.stringify([{
+				time: new Date().toISOString(),
+				method: "REFER",
+				type: requestURL.pathname,
+				details: request.headers.get("Referer") || "direct",
+			}]),
+		})
+
+		const cache = caches.default;
+		const cachedInjected = await cache.match(request.url).catch(() => null);
+		if (cachedInjected)
+			return cachedInjected;
+
 		const requestHeaders = new Headers(request.headers);
 		if (shouldRewrite) {
 			requestHeaders.delete('If-None-Match');
@@ -53,12 +72,6 @@ export default {
 		const contentType = rawResponse.headers.get('Content-Type');
 		if (!contentType || !contentType.includes('text/html'))
 			return rawResponse;
-
-		const cache = caches.default;
-
-		const cachedInjected = await cache.match(request.url).catch(() => null);
-		if (cachedInjected)
-			return cachedInjected;
 
 		/**
 		 * @typedef {Object} EmbedProperty
