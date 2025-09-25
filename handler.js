@@ -49,7 +49,9 @@ export default {
 				type: requestURL.pathname,
 				details: request.headers.get("Referer") || "direct",
 			}]),
-		}).catch(() => { }));
+		}).catch(err => {
+			console.error(err)
+		}));
 
 		const cache = caches.default;
 		const cachedInjected = await cache.match(request.url).catch(() => null);
