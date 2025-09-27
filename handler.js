@@ -40,7 +40,9 @@ export default {
 		const rewrittenPathname = shouldRewrite ? '/' : requestURL.pathname;
 		const targetURL = new URL(rewrittenPathname + requestURL.search, env.STATIC_ORIGIN);
 
-		if (shouldRewrite)
+		if (shouldRewrite) {
+			let referer = request.headers.get("Referer");
+			referer = !referer ? "direct" : !referer.endsWith('/') ? `${referer}/` : referer;
 			ctx.waitUntil(fetch("https://api.axiom.co/v1/datasets/logs/ingest?timestamp-field=time", {
 				headers: {
 					authorization: `Bearer ${env.AXIOM_LOG_TOKEN}`,
@@ -50,8 +52,8 @@ export default {
 				body: JSON.stringify([{
 					time: new Date().toISOString(),
 					method: "REFER",
-					type: !requestURL.pathname.endsWith('/') ? `${requestURL.pathname}/` : requestURL.pathname,
-					details: request.headers.get("Referer") || "direct",
+					type: requestURL.pathname,
+					details: referer,
 				}]),
 			}).then(async res => {
 				if (res.status !== 200)
@@ -59,6 +61,7 @@ export default {
 			}).catch(err => {
 				console.log({ message: err.message })
 			}));
+		}
 
 		const cache = caches.default;
 		const cachedInjected = await cache.match(request.url).catch(() => null);
