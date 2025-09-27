@@ -50,7 +50,7 @@ export default {
 				body: JSON.stringify([{
 					time: new Date().toISOString(),
 					method: "REFER",
-					type: requestURL.pathname,
+					type: !requestURL.pathname.endsWith('/') ? `${requestURL.pathname}/` : requestURL.pathname,
 					details: request.headers.get("Referer") || "direct",
 				}]),
 			}).then(async res => {
