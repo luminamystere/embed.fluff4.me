@@ -86,18 +86,27 @@ export default {
 			return rawResponse;
 
 		/**
+		 * @typedef {Object} EmbedResponse
+		 * @property {EmbedProperty[]} properties
+		 * @property {Record<string, any>} [data]
+		 */
+
+		/**
 		 * @typedef {Object} EmbedProperty
 		 * @property {'name' | 'property'} type
 		 * @property {string} name
 		 * @property {string} content
 		 */
 
-		const newEmbedProperties = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`)
+		let embedResponse = await fetch(env.API_ORIGIN + `/embed?url=${encodeURIComponent(requestURL.pathname)}`)
 			.then(response => response.json())
 			.catch(() => undefined)
-			.then(json => /** @type {EmbedProperty[] | undefined} */ (json?.data))
+			.then(json => /** @type {EmbedProperty[] | EmbedResponse | undefined} */ (json?.data))
 
-		if (!Array.isArray(newEmbedProperties) || !newEmbedProperties.length)
+		if (Array.isArray(embedResponse))
+			embedResponse = { properties: embedResponse }
+
+		if (!Array.isArray(embedResponse.properties) || !embedResponse.properties.length)
 			return rawResponse
 
 		/** 
@@ -115,15 +124,15 @@ export default {
 				.replaceAll('\n', '&NewLine;')
 		}
 
-		let newEmbedHTML = newEmbedProperties.map(prop => {
+		let newEmbedHTML = embedResponse.properties.map(prop => {
 			if (prop.type !== 'name' && prop.type !== 'property')
 				return ''
 
 			return `<meta ${prop.type}="${escapeHTMLAttributeValue(prop.name)}" content="${escapeHTMLAttributeValue(prop.content)}" />`
 		}).join('\n\t\t')
 
-		const canonicalURL = newEmbedProperties.find(p => (p.type === 'property' && p.name === 'og:url'))?.content
-		const title = newEmbedProperties.find(p => (p.type === 'property' && p.name === 'og:title'))?.content
+		const canonicalURL = embedResponse.properties.find(p => (p.type === 'property' && p.name === 'og:url'))?.content
+		const title = embedResponse.properties.find(p => (p.type === 'property' && p.name === 'og:title'))?.content
 
 		if (canonicalURL) {
 			const oembedEndpoint = escapeHTMLAttributeValue(`https://api.fluff4.me/oembed?url=${encodeURIComponent(canonicalURL)}`)
