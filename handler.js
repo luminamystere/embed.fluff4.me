@@ -81,9 +81,21 @@ export default {
 			redirect: 'follow',
 		});
 
+		function cacheRawResponse () {
+			const headersForCaching = new Headers(rawResponse.headers);
+			headersForCaching.set('Cache-Control', 'public, s-maxage=300'); // 5 minute cache
+			const responseToCache = new Response(rawResponse.body, {
+				status: rawResponse.status,
+				statusText: rawResponse.statusText,
+				headers: headersForCaching,
+			});
+			ctx.waitUntil(cache.put(request.url, responseToCache.clone()).catch(() => { }));
+			return responseToCache;
+		}
+
 		const contentType = rawResponse.headers.get('Content-Type');
 		if (!contentType || !contentType.includes('text/html'))
-			return rawResponse;
+			return cacheRawResponse();
 
 		/**
 		 * @typedef {Object} EmbedResponse
@@ -106,9 +118,8 @@ export default {
 		if (Array.isArray(embedResponse))
 			embedResponse = { properties: embedResponse }
 
-		if (!Array.isArray(embedResponse.properties) || !embedResponse.properties.length)
-			return rawResponse
 		if (!Array.isArray(embedResponse?.properties) || !embedResponse.properties.length)
+			return cacheRawResponse();
 
 		/** 
 		 * @param {string} str 
