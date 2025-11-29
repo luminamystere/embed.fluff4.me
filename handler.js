@@ -108,6 +108,7 @@ export default {
 
 		if (!Array.isArray(embedResponse.properties) || !embedResponse.properties.length)
 			return rawResponse
+		if (!Array.isArray(embedResponse?.properties) || !embedResponse.properties.length)
 
 		/** 
 		 * @param {string} str 
